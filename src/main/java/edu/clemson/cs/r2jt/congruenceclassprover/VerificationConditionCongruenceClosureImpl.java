@@ -68,15 +68,28 @@ public class VerificationConditionCongruenceClosureImpl {
             //addPExp(forAllQuantifiedPExps.iterator(),true);
             makeSetAssertions(vc);
         }
-        // seed with not(false)
+
         ArrayList<PExp> args = new ArrayList<PExp>();
+        //seed with (true = false) = false
+        PSymbol tr = new PSymbol(m_typegraph.BOOLEAN, null, "true");
         PSymbol fls = new PSymbol(m_typegraph.BOOLEAN, null, "false");
+        args.add(tr);
+        args.add(fls);
+        PSymbol tEf = new PSymbol(m_typegraph.BOOLEAN,null,"=",args);
+        args.clear();
+        args.add(tEf);
+        args.add(fls);
+        PSymbol tEfEf = new PSymbol(m_typegraph.BOOLEAN,null,"=",args);
+        m_conjunction.addExpression(tEfEf);
+        args.clear();
+
+        // seed with not(false)
         args.add(fls);
         PSymbol nF = new PSymbol(m_typegraph.BOOLEAN, null, "not", args);
         m_conjunction.addExpression(nF);
         args.clear();
+
         // seed with true and true.  Need this for search: x and y, when x and y are both true
-        PSymbol tr = new PSymbol(m_typegraph.BOOLEAN, null, "true");
         args.add(tr);
         args.add(tr);
         PSymbol tandt = new PSymbol(m_typegraph.BOOLEAN, null, "and", args);
@@ -377,11 +390,12 @@ public class VerificationConditionCongruenceClosureImpl {
     private void addPExp(Iterator<PExp> pit, boolean inAntecedent) {
         while (pit.hasNext() && !m_conjunction.m_evaluates_to_false) {
             PExp curr = pit.next();
+            PExp currConv = Utilities.replacePExp(curr,m_typegraph);
             if (inAntecedent) {
-                m_conjunction.addExpression(curr);
+                m_conjunction.addExpression(currConv);
             }
             else {
-                int intRepForExp = m_conjunction.addFormula(curr);
+                int intRepForExp = m_conjunction.addFormula(currConv);
                 addGoal(m_registry.getSymbolForIndex(intRepForExp));
             }
         }
@@ -396,7 +410,8 @@ public class VerificationConditionCongruenceClosureImpl {
 
     @Override
     public String toString() {
-        String r = "\n" + m_VC_string + "\n" + m_name + "\n" + m_conjunction;
+        //String r = "\n" + m_VC_string + "\n" + m_name + "\n" + m_conjunction;
+        String r = "\n" + m_name + "\n" + m_conjunction;
         for (PExp pq : forAllQuantifiedPExps) {
             r += pq.toString() + "\n";
         }

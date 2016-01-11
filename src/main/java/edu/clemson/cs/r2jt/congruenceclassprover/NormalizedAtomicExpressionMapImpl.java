@@ -250,6 +250,10 @@ public class NormalizedAtomicExpressionMapImpl
         return r;
     }
 
+    public int getArity(){
+        return arity;
+    }
+
     @Override
     public int hashCode() {
         return m_expression.hashCode();

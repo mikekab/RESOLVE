@@ -159,6 +159,7 @@ public class Registry {
 
     protected int findAndCompress(int index) {
         // early return for parent
+        assert 0 <= index : "Non existent index";
         if (m_symbolIndexParentArray.get(index) == index)
             return index;
         Stack<Integer> needToUpdate = new Stack<Integer>();

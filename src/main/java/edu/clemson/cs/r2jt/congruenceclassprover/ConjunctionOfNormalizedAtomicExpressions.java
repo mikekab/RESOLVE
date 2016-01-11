@@ -12,11 +12,13 @@
  */
 package edu.clemson.cs.r2jt.congruenceclassprover;
 
+import edu.clemson.cs.r2jt.rewriteprover.*;
 import edu.clemson.cs.r2jt.rewriteprover.absyn.*;
 import edu.clemson.cs.r2jt.typeandpopulate.MTFunction;
 import edu.clemson.cs.r2jt.typeandpopulate.MTType;
 import edu.clemson.cs.r2jt.vcgeneration.vcs.VerificationCondition;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -63,7 +65,6 @@ public class ConjunctionOfNormalizedAtomicExpressions {
         String rString = "";
         rString += addExpression(expression);
         m_current_justification = "";
-        mergeArgsOfEqualityPredicateIfRootIsTrue();
         updateUseMap();
         return rString;
     }
@@ -74,7 +75,6 @@ public class ConjunctionOfNormalizedAtomicExpressions {
             return "";
         }
         String name = expression.getTopLevelOperation();
-
         if (expression.isEquality()) {
             int lhs = addFormula(expression.getSubExpressions().get(0));
             int rhs = addFormula(expression.getSubExpressions().get(1));
@@ -85,19 +85,6 @@ public class ConjunctionOfNormalizedAtomicExpressions {
             r += addExpression(expression.getSubExpressions().get(0));
             r += addExpression(expression.getSubExpressions().get(1));
             return r;
-        }
-        else if (name.equals("/=")) {
-            ArrayList<PExp> args = new ArrayList<PExp>();
-            args.add(expression.getSubExpressions().get(0));
-            args.add(expression.getSubExpressions().get(1));
-            PSymbol eqExp =
-                    new PSymbol(m_registry.m_typeGraph.BOOLEAN, null, "=", args);
-            args.clear();
-            args.add(eqExp);
-            PSymbol notEqExp =
-                    new PSymbol(m_registry.m_typeGraph.BOOLEAN, null, "not",
-                            args);
-            return addExpression(notEqExp);
         }
         else {
             MTType type = expression.getType();
@@ -113,6 +100,7 @@ public class ConjunctionOfNormalizedAtomicExpressions {
         }
         return "";
     }
+
 
     // adds a particular symbol to the registry
     protected int addPsymbol(PSymbol ps) {
@@ -204,7 +192,6 @@ public class ConjunctionOfNormalizedAtomicExpressions {
             assert newExpr != null;
             newExpr.writeOnto(root, pos);
         }
-        mergeArgsOfEqualityPredicateIfRootIsTrue(); // this may cause symbols in newExpr to merge to others
         if (m_evaluates_to_false) {
             return -1;
         }
@@ -327,55 +314,13 @@ public class ConjunctionOfNormalizedAtomicExpressions {
         return a < b ? a : b;
     }
 
-    // look for =(x,y)=true in list.  If found call merge(x,y).
-    // look for =(x,x)=y in list. If found call merge(true,y).
-    //  = will always be at top of list.
-    // removes =(x,x)= true afterwards
-    protected void mergeArgsOfEqualityPredicateIfRootIsTrue() {
-        if (m_timeToEnd > 0 && System.currentTimeMillis() > m_timeToEnd) {
-            return;
-        }
-        // loop until end, function op is not =, or =(x,y)=true
-        // when found do merge, start again.
-        int eqQ = m_registry.getIndexForSymbol("=");
-        int t = m_registry.getIndexForSymbol("true");
-        int fls = m_registry.getIndexForSymbol("false");
-        int numContinues = 0;
-        for (int i = 0; i < m_exprList.size(); ++i) {
-            NormalizedAtomicExpressionMapImpl cur = m_exprList.get(i);
-            int f = cur.readPosition(0);
-            if (f != eqQ || m_evaluates_to_false) {
-                break;
-            }
-            int root = cur.readRoot();
-            int op1 = cur.readPosition(1);
-            int op2 = cur.readPosition(2);
-            if (root == t && op1 != op2) {
-                mergeOperators(cur.readPosition(1), cur.readPosition(2));
-                // mergeOperators will do any other merges that arise.
-                i = 0;
-                numContinues++;
-            }
-            else if ((op1 == op2) && (root != t)) {
-                // (x = x) = false
-                if (root == fls) {
-                    m_evaluates_to_false = true;
-                    return;
-                }
-                mergeOperators(t, root);
-                i = 0;
-                numContinues++;
-            }
-        }
-
-    }
-
     // Return list of modified predicates by their position. Only these can cause new merges.
     // b is replaced by a
     protected Stack<Integer> mergeOnlyArgumentOperators(int a, int b) {
         if (m_timeToEnd > 0 && System.currentTimeMillis() > m_timeToEnd) {
             return null;
         }
+        if(a == b) return null;
         Iterator<NormalizedAtomicExpressionMapImpl> it = m_exprList.iterator();
         Stack<NormalizedAtomicExpressionMapImpl> modifiedEntries =
                 new Stack<NormalizedAtomicExpressionMapImpl>();
@@ -398,23 +343,9 @@ public class ConjunctionOfNormalizedAtomicExpressions {
             if (indexToInsert < 0) {
                 indexToInsert = -(indexToInsert + 1);
                 NormalizedAtomicExpressionMapImpl nm = modifiedEntries.peek();
-                if (m_VC != null
-                        && m_registry.getSymbolForIndex(nm.readPosition(0))
-                                .equals("or")) {
-                    if (m_VC.m_goal.contains(m_registry.getSymbolForIndex(nm
-                            .readRoot()))) {
-                        //System.err.println("new goals");
-                        String g1 =
-                                m_registry
-                                        .getSymbolForIndex(nm.readPosition(1));
-                        String g2 =
-                                m_registry
-                                        .getSymbolForIndex(nm.readPosition(2));
-                        m_VC.addGoal(g1);
-                        m_VC.addGoal(g2);
-                        //System.err.println(nm.toHumanReadableString(m_registry) + " " + g1 + " " + g2);
-                    }
-                }
+
+                    applyBuiltInLogicArity2(nm,coincidentalMergeHoldingTank);
+
                 m_exprList.add(indexToInsert, modifiedEntries.pop());
 
             }
@@ -432,7 +363,130 @@ public class ConjunctionOfNormalizedAtomicExpressions {
         m_registry.substitute(a, b);
         return coincidentalMergeHoldingTank;
     }
+    private void applyBuiltInLogicArity2(NormalizedAtomicExpressionMapImpl nm, Stack<Integer> tank){
+        if (nm.getArity()!=2) return;
+        int op = nm.readPosition(0);
+        int arg1 = nm.readPosition(1);
+        int arg2 = nm.readPosition(2);
+        int rhs = nm.readRoot();
+        int tr = m_registry.getIndexForSymbol("true");
+        int fl = m_registry.getIndexForSymbol("false");
+        // =,true,false,not.  recorded first in reg. logic relation args (and, or, =) are ordered.
+        // guard: return if all constant
+        if((arg1 == tr || arg1 == fl)&&(arg2 == tr || arg2 == fl) && (rhs == tr || rhs == fl) ) return;
+        // guard: return if all var
+        //if((arg1 != tr && arg1 != fl)&&(arg2 != tr && arg2 != fl) && (rhs != tr && rhs != fl) ) return;
+        // rules for and
+        if(m_registry.m_symbolToIndex.containsKey("and") && op == m_registry.getIndexForSymbol("and")){
+            // constant rhs
+            if(rhs == tr){
+                // (p and q) = t |= t/p, t/q
+                if(tr!=arg1) {
+                    tank.push(tr);
+                    tank.push(arg1);
+                }
+                if(tr!=arg2) {
+                    tank.push(tr);
+                    tank.push(arg2);
+                }
+            }
+            // constant t arg
+            else if(arg1 == tr){
+                // (t and p) = q |= p/q
+                if(rhs!=arg2) {
+                    tank.push(rhs);
+                    tank.push(arg2);
+                }
+            }
+            // constant f arg
+            else if(arg1 == fl){
+                // (f and p) = q |= f/q
+                if(fl!=rhs) {
+                    tank.push(fl);
+                    tank.push(rhs);
+                }
+            }
+            // all vars
+            else if(arg1 == arg2){
+                // (p = p) = q |= t/q
+                if(tr!=rhs){
+                    tank.push(tr);
+                    tank.push(rhs);
+                }
+            }
+        }
+        else if(m_registry.m_symbolToIndex.containsKey("or") && op == m_registry.getIndexForSymbol("or")){
+            // constant f rhs
+            if(rhs == fl){
+                // p or q = f |= f/p/q
+                if(fl!=arg1) {
+                    tank.push(fl);
+                    tank.push(arg1);
+                }
+                if(fl!=arg2) {
+                    tank.push(fl);
+                    tank.push(arg2);
+                }
+            }
+            // constant t arg
+            else if(arg1 == tr){
+                // (t or p) = q |= t/q
+                if(tr!=rhs) {
+                    tank.push(tr);
+                    tank.push(rhs);
+                }
+            }
+            // constant f arg
+            else if(arg1 == fl){
+                // (f or p) = q |= p/q
+                if(arg2!=rhs) {
+                    tank.push(arg2);
+                    tank.push(rhs);
+                }
+            }
+            // all vars.
+            // p or not p = q := t/q
+        }
+        else if(op == m_registry.getIndexForSymbol("=")){
+            // constant t rhs
+            if(rhs == tr){
+                // (p = q) = t |= p/q
+                if(arg1!=arg2) {
+                    tank.push(arg1);
+                    tank.push(arg2);
+                }
+            }
+            // constant f rhs
+            else if(rhs == fl){
+                // constant t arg
+                if(arg1 == tr){
+                    if(fl!=arg2) {
+                        // (t = p) = f |= f/p
+                        tank.push(fl);
+                        tank.push(arg2);
+                    }
+                }
+                // constant f arg
+                if(arg1 == fl){
+                    // (f = p) = f |= t/p
+                    if(tr!=arg2) {
+                        tank.push(tr);
+                        tank.push(arg2);
+                    }
+                }
+            }
+            // constant t arg
+            else if(arg1 == tr){
+                // (t = p) = q |= p/q
+                if(arg2!=rhs) {
+                    tank.push(arg2);
+                    tank.push(rhs);
+                }
+            }
+        }
 
+
+    }
     protected void updateUseMap() {
         m_useMap.clear();
         assert m_useMap.size() == 0;

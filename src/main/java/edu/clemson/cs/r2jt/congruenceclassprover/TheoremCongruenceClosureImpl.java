@@ -56,20 +56,7 @@ public class TheoremCongruenceClosureImpl {
         m_matchConj =
                 new ConjunctionOfNormalizedAtomicExpressions(m_theoremRegistry,
                         null);
-        if (p.getTopLevelOperation().equals("implies")) {
-            PExp matchingpart = p.getSubExpressions().get(0);
-            m_matchConj.addExpression(matchingpart);
-            m_insertExpr = p.getSubExpressions().get(1);
-            if (matchingpart.getTopLevelOperation().equals("=")) {
-                if (matchingpart.getSubExpressions().get(0).getSubExpressions()
-                        .size() == 0
-                        && matchingpart.getSubExpressions().get(1)
-                                .getSubExpressions().size() == 0) {
-                    partMatchedisConstantEquation = true;
-                }
-            } //
-        }
-        else if (p.getQuantifiedVariables().size() == 1) {
+        if (p.getQuantifiedVariables().size() == 1) {
             // empty matchConj will trigger find by type
             m_matchConj.addFormula(p); // this adds symbols to reg
             m_matchConj.clear(); // will match based on types
