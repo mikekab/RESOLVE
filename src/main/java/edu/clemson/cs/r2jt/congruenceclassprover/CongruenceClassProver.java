@@ -63,7 +63,7 @@ public final class CongruenceClassProver {
     private long totalTime = 0;
     private final int numUsesBeforeQuit; // weird bug if this isn't final
     private final int DEFAULTTRIES = -1;
-    private static final String[] NUMTRIES_ARGS = { "numtries" };
+    private static final String[] NUMTRIES_ARGS = {"numtries"};
     public static final Flag FLAG_NUMTRIES =
             new Flag("Proving", "num_tries",
                     "Prover will halt after this many timeouts.",
@@ -84,7 +84,7 @@ public final class CongruenceClassProver {
     }
 
     public CongruenceClassProver(TypeGraph g, List<VC> vcs, ModuleScope scope,
-            CompileEnvironment environment, ProverListener listener) {
+                                 CompileEnvironment environment, ProverListener listener) {
 
         // Only for web ide //////////////////////////////////////////
         myModels = new PerVCProverModel[vcs.size()];
@@ -95,16 +95,14 @@ public final class CongruenceClassProver {
             myTimeout =
                     Integer.parseInt(environment.flags.getFlagArgument(
                             Prover.FLAG_TIMEOUT, Prover.FLAG_TIMEOUT_ARG_NAME));
-        }
-        else {
+        } else {
             myTimeout = DEFAULTTIMEOUT;
         }
         if (environment.flags.isFlagSet(CongruenceClassProver.FLAG_NUMTRIES)) {
             numUsesBeforeQuit =
                     Integer.parseInt(environment.flags.getFlagArgument(
                             CongruenceClassProver.FLAG_NUMTRIES, "numtries"));
-        }
-        else {
+        } else {
             numUsesBeforeQuit = DEFAULTTRIES;
         }
 
@@ -128,7 +126,7 @@ public final class CongruenceClassProver {
                         MathSymbolTable.FacilityStrategy.FACILITY_IGNORE));
 
         for (TheoremEntry e : theoremEntries) {
-            PExp assertion = Utilities.replacePExp(e.getAssertion(),g);
+            PExp assertion = Utilities.replacePExp(e.getAssertion(), g);
             String eName = e.getName();
             if (assertion.isEquality()
                     && assertion.getQuantifiedVariables().size() > 0) {
@@ -136,8 +134,7 @@ public final class CongruenceClassProver {
                 addEqualityTheorem(false, assertion, eName + "_right"); // match right
                 /*m_theorems.add(new TheoremCongruenceClosureImpl(g, assertion,
                         false, eName + "_whole")); // match whole*/
-            }
-            else {
+            } else {
                 TheoremCongruenceClosureImpl t =
                         new TheoremCongruenceClosureImpl(g, assertion, false,
                                 eName);
@@ -151,14 +148,13 @@ public final class CongruenceClassProver {
     }
 
     private void addEqualityTheorem(boolean matchLeft, PExp theorem,
-            String thName) {
+                                    String thName) {
         PExp lhs, rhs;
 
         if (matchLeft) {
             lhs = theorem.getSubExpressions().get(0);
             rhs = theorem.getSubExpressions().get(1);
-        }
-        else {
+        } else {
             lhs = theorem.getSubExpressions().get(1);
             rhs = theorem.getSubExpressions().get(0);
         }
@@ -181,8 +177,8 @@ public final class CongruenceClassProver {
         int i = 0;
         int numUnproved = 0;
         for (VerificationConditionCongruenceClosureImpl vcc : m_ccVCs) {
-            printVCEachStep = true;
-            if (!vcc.m_name.equals("0_12")) continue;
+            //printVCEachStep = true;
+            //if (!vcc.m_name.equals("0_18")) continue;
             long startTime = System.nanoTime();
             String whyQuit = "";
             // Skip proof loop
@@ -200,17 +196,14 @@ public final class CongruenceClassProver {
             if (proved
                     .equals(VerificationConditionCongruenceClosureImpl.STATUS.PROVED)) {
                 whyQuit += " Proved ";
-            }
-            else if (proved
+            } else if (proved
                     .equals(VerificationConditionCongruenceClosureImpl.STATUS.FALSE_ASSUMPTION)) {
                 whyQuit += " Proved (Assumption(s) false) ";
-            }
-            else if (proved
+            } else if (proved
                     .equals(VerificationConditionCongruenceClosureImpl.STATUS.STILL_EVALUATING)) {
                 whyQuit += " Out of theorems, or timed out ";
                 numUnproved++;
-            }
-            else
+            } else
                 whyQuit += " Goal false "; // this isn't currently reachable
 
             long endTime = System.nanoTime();
@@ -299,7 +292,8 @@ public final class CongruenceClassProver {
                 div + ("Before application of theorems: " + vcc + "\n");
 
         int iteration = 0;
-        chooseNewTheorem: while (status
+        chooseNewTheorem:
+        while (status
                 .equals(VerificationConditionCongruenceClosureImpl.STATUS.STILL_EVALUATING)
                 && System.currentTimeMillis() <= endTime) {
             long time_at_theorem_pq_creation = System.currentTimeMillis();
@@ -309,12 +303,12 @@ public final class CongruenceClassProver {
             TheoremPrioritizer rankedTheorems =
                     new TheoremPrioritizer(theoremsForThisVC,
                             vcSymbolRelevanceMap, theoremAppliedCount, vcc
-                                    .getRegistry());
+                            .getRegistry());
             int max_Theorems_to_choose = 1;
             int num_Theorems_chosen = 0;
             while (!rankedTheorems.m_pQueue.isEmpty()
                     && status
-                            .equals(VerificationConditionCongruenceClosureImpl.STATUS.STILL_EVALUATING)
+                    .equals(VerificationConditionCongruenceClosureImpl.STATUS.STILL_EVALUATING)
                     && (num_Theorems_chosen < max_Theorems_to_choose)) {
                 // +++++++ Chooses top of uninstantiated theorem PQ
                 long time_at_selection = System.currentTimeMillis();
@@ -335,7 +329,7 @@ public final class CongruenceClassProver {
                             new InstantiatedTheoremPrioritizer(
                                     instantiatedTheorems, vcc.getRegistry());
                     String substitutionMade = "";
-                    while (!instPQ.m_pQueue.isEmpty() && substitutionMade == "") {
+                    while (!instPQ.m_pQueue.isEmpty() && substitutionMade.equals("")) {
                         PExpWithScore curP = instPQ.m_pQueue.poll();
 
                         if (!applied.contains(curP.m_theorem.toString())) {
@@ -373,7 +367,7 @@ public final class CongruenceClassProver {
                         }
 
                     }
-                    if (substitutionMade == "") {
+                    if (substitutionMade.equals("")) {
                         theseResults +=
                                 "Emptied queue for "
                                         + cur.m_name
@@ -381,8 +375,7 @@ public final class CongruenceClassProver {
                                         + (System.currentTimeMillis() - time_at_selection)
                                         + "ms]\n\n";
                     }
-                }
-                else {
+                } else {
                     theseResults +=
                             "Could not find any matches for "
                                     + cur.m_name

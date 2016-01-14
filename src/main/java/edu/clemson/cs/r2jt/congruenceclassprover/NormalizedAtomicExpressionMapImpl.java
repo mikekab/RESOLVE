@@ -62,7 +62,7 @@ public class NormalizedAtomicExpressionMapImpl
         return rMap;
     }
 
-    // Returns a multiset
+    // Returns a multiset. Counts symbols
     protected Map<String, Integer> getArgumentsAsStrings(Registry reg) {
         HashMap<String, Integer> rMap = new HashMap<String, Integer>();
         for (int i = 1; i < m_maxPositions; ++i) {
@@ -104,6 +104,13 @@ public class NormalizedAtomicExpressionMapImpl
         return -1;
     }
 
+    public String readPosition(int position, Registry reg){
+       int posSym = readPosition(position);
+        if(posSym >= 0){
+            return reg.getSymbolForIndex(posSym);
+        }
+        return "";
+    }
     // returns a key if it used everywhere in positionBitCode
     public int readPositionBitcode(int positionBitCode) {
         Set<Map.Entry<Integer, Integer>> entries = m_expression.entrySet();
@@ -199,6 +206,11 @@ public class NormalizedAtomicExpressionMapImpl
         return -1;
     }
 
+    protected String readRoot(Registry reg){
+        int posSym = readRoot();
+        if(posSym >= 0) return reg.getSymbolForIndex(posSym);
+        return "";
+    }
     // compare left sides of 2 expressions.  If this returns 0, you must compare right hand sides afterwards.
     @Override
     public int compareTo(NormalizedAtomicExpressionMapImpl o) {
@@ -250,7 +262,7 @@ public class NormalizedAtomicExpressionMapImpl
         return r;
     }
 
-    public int getArity(){
+    public int getArity() {
         return arity;
     }
 

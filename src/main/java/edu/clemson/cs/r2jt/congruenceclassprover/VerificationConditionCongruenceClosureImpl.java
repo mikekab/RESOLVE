@@ -75,11 +75,11 @@ public class VerificationConditionCongruenceClosureImpl {
         PSymbol fls = new PSymbol(m_typegraph.BOOLEAN, null, "false");
         args.add(tr);
         args.add(fls);
-        PSymbol tEf = new PSymbol(m_typegraph.BOOLEAN,null,"=",args);
+        PSymbol tEf = new PSymbol(m_typegraph.BOOLEAN, null, "=", args);
         args.clear();
         args.add(tEf);
         args.add(fls);
-        PSymbol tEfEf = new PSymbol(m_typegraph.BOOLEAN,null,"=",args);
+        PSymbol tEfEf = new PSymbol(m_typegraph.BOOLEAN, null, "=", args);
         m_conjunction.addExpression(tEfEf);
         args.clear();
 
@@ -118,6 +118,36 @@ public class VerificationConditionCongruenceClosureImpl {
         args.add(fls);
         PSymbol fandfeqf = new PSymbol(m_typegraph.BOOLEAN, null, "=", args);
         m_conjunction.addExpression(fandfeqf);
+        // seed with true or true = true
+        args.clear();
+        args.add(tr);
+        args.add(tr);
+        PSymbol trOrTr = new PSymbol(m_typegraph.BOOLEAN, null, "or", args);
+        args.clear();
+        args.add(trOrTr);
+        args.add(tr);
+        PSymbol trOrTrEqTr = new PSymbol(m_typegraph.BOOLEAN,null,"=", args);
+        m_conjunction.addExpression(trOrTr);
+        // seed with true or false = true
+        args.clear();
+        args.add(tr);
+        args.add(fls);
+        PSymbol trOrFls = new PSymbol(m_typegraph.BOOLEAN,null,"or",args);
+        args.clear();
+        args.add(trOrFls);
+        args.add(tr);
+        PSymbol trOrFlsEqTr = new PSymbol(m_typegraph.BOOLEAN,null,"=",args);
+        m_conjunction.addExpression(trOrFlsEqTr);
+        // seed with false or false = false
+        args.clear();
+        args.add(fls);
+        args.add(fls);
+        PSymbol flsOrFls = new PSymbol(m_typegraph.BOOLEAN,null,"or",args);
+        args.clear();
+        args.add(flsOrFls);
+        args.add(fls);
+        PSymbol flsOrFlsEqFls = new PSymbol(m_typegraph.BOOLEAN,null,"=",args);
+        m_conjunction.addExpression(flsOrFlsEqFls);
         //m_goal.add("false");
         m_conjunction.updateUseMap();
     }
@@ -390,7 +420,7 @@ public class VerificationConditionCongruenceClosureImpl {
     private void addPExp(Iterator<PExp> pit, boolean inAntecedent) {
         while (pit.hasNext() && !m_conjunction.m_evaluates_to_false) {
             PExp curr = pit.next();
-            PExp currConv = Utilities.replacePExp(curr,m_typegraph);
+            PExp currConv = Utilities.replacePExp(curr, m_typegraph);
             if (inAntecedent) {
                 m_conjunction.addExpression(currConv);
             }

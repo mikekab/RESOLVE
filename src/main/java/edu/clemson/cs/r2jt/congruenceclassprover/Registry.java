@@ -228,7 +228,8 @@ public class Registry {
         symbolName = symbolName.replaceAll("\\p{Cc}", "");
         if (symbolName.contains("lambda"))
             m_lambda_names.add(symbolName);
-        assert symbolName.length() != 0 : "blank symbol error in addSymbol";
+        assert symbolName.length() != 0
+                : "blank symbol error in addSymbol";
         if (isSymbolInTable(symbolName)) {
             return getIndexForSymbol(symbolName);
         }

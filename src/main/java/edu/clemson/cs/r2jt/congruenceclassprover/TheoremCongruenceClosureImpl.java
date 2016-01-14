@@ -45,7 +45,7 @@ public class TheoremCongruenceClosureImpl {
     protected boolean m_noQuants = false;
 
     public TheoremCongruenceClosureImpl(TypeGraph g, PExp p,
-            boolean allowNewSymbols, String name) {
+                                        boolean allowNewSymbols, String name) {
         m_name = name;
         m_allowNewSymbols = allowNewSymbols;
         m_typeGraph = g;
@@ -61,8 +61,7 @@ public class TheoremCongruenceClosureImpl {
             m_matchConj.addFormula(p); // this adds symbols to reg
             m_matchConj.clear(); // will match based on types
             m_insertExpr = p;
-        }
-        else {
+        } else {
             /* experimental
             
             Is_Permutation((S o T), (T o S)) for example,
@@ -80,8 +79,8 @@ public class TheoremCongruenceClosureImpl {
 
     // for theorems that are equations
     public TheoremCongruenceClosureImpl(TypeGraph g, PExp toMatchAndBind,
-            PExp toInsert, boolean enterToMatchAndBindAsEquivalentToTrue,
-            boolean allowNewSymbols, String name) {
+                                        PExp toInsert, boolean enterToMatchAndBindAsEquivalentToTrue,
+                                        boolean allowNewSymbols, String name) {
         m_name = name;
         m_allowNewSymbols = allowNewSymbols;
         m_typeGraph = g;
@@ -191,10 +190,9 @@ public class TheoremCongruenceClosureImpl {
         Set<java.util.Map<String, String>> allValidBindings;
         if (m_matchConj.size() == 0
                 || ((m_allowNewSymbols && m_theorem.getQuantifiedVariables()
-                        .size() == 1) && isEquality)) {
+                .size() == 1) && isEquality)) {
             allValidBindings = findValidBindingsByType(vc, endTime);
-        }
-        else
+        } else
             allValidBindings = findValidBindings(vc, endTime);
 
         if (allValidBindings == null || allValidBindings.size() == 0) {
@@ -210,7 +208,7 @@ public class TheoremCongruenceClosureImpl {
                 if (m_theoremRegistry.m_indexToSymbol.contains(curBinding
                         .get(thKey))
                         && vc.getRegistry().getUsage(curBinding.get(thKey))
-                                .equals(Registry.Usage.FORALL)) {
+                        .equals(Registry.Usage.FORALL)) {
                     throw new RuntimeException("Quantified var unbound");
                 }
                 MTType quanType =
@@ -282,7 +280,7 @@ public class TheoremCongruenceClosureImpl {
                 // wildcard is not parent
                 if (!actual.equals(wild))
                     wildToActual.put(wild, actual);
-                // wildcard is parent, bind to child
+                    // wildcard is parent, bind to child
                 else {
                     Set<String> ch = m_theoremRegistry.getChildren(wild);
                     // choose first non quantified symbol (they are all equal)
@@ -292,7 +290,7 @@ public class TheoremCongruenceClosureImpl {
                         if (!m_theoremRegistry.getUsage(c).equals(
                                 Registry.Usage.FORALL)
                                 || !m_theoremRegistry.getUsage(c).equals(
-                                        Registry.Usage.CREATED)) {
+                                Registry.Usage.CREATED)) {
                             wildToActual.put(wild, c);
                             break;
                         }
@@ -331,10 +329,40 @@ public class TheoremCongruenceClosureImpl {
                 new HashSet<java.util.Map<String, String>>();
         java.util.Map<String, String> initBindings = getInitBindings();
         results.add(initBindings);
+        ArrayList<NormalizedAtomicExpressionMapImpl> eqEq = new ArrayList<NormalizedAtomicExpressionMapImpl>();
         for (NormalizedAtomicExpressionMapImpl e_t : m_matchConj.m_exprList) {
+            if (e_t.readPosition(0) == m_theoremRegistry.getIndexForSymbol("=")) {
+                eqEq.add(e_t);
+                continue;
+            }
             results =
                     vc.getConjunct().getMatchesForOverideSet(e_t,
                             m_theoremRegistry, results);
+        }
+        Set<java.util.Map<String, String>> newResults =
+                new HashSet<java.util.Map<String, String>>();
+        for (NormalizedAtomicExpressionMapImpl e_t : eqEq) {
+            boolean mustDoSearch = false;
+            for (java.util.Map<String, String> r : results) {
+                String t1 = m_theoremRegistry.getSymbolForIndex(e_t.readPosition(1));
+                String a1 = r.get(t1) == null ? t1 : r.get(t1);
+                String t2 = m_theoremRegistry.getSymbolForIndex(e_t.readPosition(2));
+                String a2 = r.get(t2) == null ? t2 : r.get(t2);
+                String tr = m_theoremRegistry.getSymbolForIndex(e_t.readRoot());
+                String ar = r.get(tr);
+                if (a1.equals("") && !(a2.equals("")) &&
+                        (ar.equals("true") || ar.equals(""))) {
+                    r.put(t1, a2);
+                    r.put(tr, "true");
+                } else if (a2.equals("") && !(a1.equals("")) &&
+                        (ar.equals("true") || ar.equals(""))) {
+                    r.put(t2, a1);
+                    r.put(tr, "true");
+                } else mustDoSearch = true;
+            }
+            if (mustDoSearch) {
+                results = vc.getConjunct().getMatchesForOverideSet(e_t, m_theoremRegistry, results);
+            }
         }
         return results;
     }
