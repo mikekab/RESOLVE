@@ -18,6 +18,7 @@ import edu.clemson.cs.r2jt.typeandpopulate.MTType;
 import edu.clemson.cs.r2jt.typereasoning.TypeGraph;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Mike on 2/1/2016.
@@ -31,24 +32,22 @@ public class Utilities {
         for (PExp pa : p.getSubExpressions()) {
             argList.add(replacePExp(pa, g, z, n));
         }
-        String pTop = p.getTopLevelOperation();
+        // Somehow hidden characters are getting introduced.
+        String pTop = p.getTopLevelOperation().replaceAll("\\p{Cc}", "");
+        // Every symbol is rewritten by this method.
         if (pTop.equals("/=")) {
-            PSymbol eqExp = new PSymbol(g.BOOLEAN, null, "=B", argList);
+            PSymbol eqExp = new PSymbol(g.BOOLEAN, null, "=", argList);
             argList.clear();
             argList.add(eqExp);
-            argList.add(new PSymbol(g.BOOLEAN, null, "false"));
-            PSymbol pEqFalse = new PSymbol(g.BOOLEAN, null, "=B", argList);
-            return pEqFalse;
+            return new PSymbol(g.BOOLEAN, null, "not", argList);
         }
-        else if (pTop.equals("not")) {
-            argList.add(new PSymbol(g.BOOLEAN, null, "false"));
-            PSymbol pEqFalse = new PSymbol(g.BOOLEAN, null, "=B", argList);
-            return pEqFalse;
+        else if(pTop.equals("=")&& argList.get(0).getType().toString().equals("B")){
+            return new PSymbol(g.BOOLEAN,null,"iff",argList);
         }
         else if (pTop.equals(">=")) {
             argsTemp.add(argList.get(1));
             argsTemp.add(argList.get(0));
-            return new PSymbol(g.BOOLEAN, null, "<=B", argsTemp);
+            return new PSymbol(g.BOOLEAN, null, "<=", argsTemp);
         }
         else if (pTop.equals("<") && z != null && n != null
                 && argList.get(0).getType().isSubtypeOf(z)
@@ -62,7 +61,7 @@ public class Utilities {
             argsTemp.clear();
             argsTemp.add(plus1);
             argsTemp.add(argList.get(1));
-            return new PSymbol(p.getType(), p.getTypeValue(), "<=B", argsTemp);
+            return new PSymbol(p.getType(), p.getTypeValue(), "<=", argsTemp);
         }
         else if (pTop.equals(">") && z != null && n != null
                 && argList.get(0).getType().isSubtypeOf(z)
@@ -76,7 +75,7 @@ public class Utilities {
             argsTemp.clear();
             argsTemp.add(plus1);
             argsTemp.add(argList.get(0));
-            return new PSymbol(p.getType(), p.getTypeValue(), "<=B", argsTemp);
+            return new PSymbol(p.getType(), p.getTypeValue(), "<=", argsTemp);
         }
         else if (z != null && pTop.equals("-")
                 && p.getSubExpressions().size() == 2) {
@@ -92,13 +91,24 @@ public class Utilities {
                     argsTemp);
         }
         // New: 5/8/16. Tag operators with range type if they aren't quantified.
-        else if (argList.size() > 0) {
+ /*       else if (argList.size() > 0 ) {
             if (((PSymbol) p).quantification
                     .equals(PSymbol.Quantification.NONE))
                 pTop += p.getType().toString();
             return new PSymbol(p.getType(), p.getTypeValue(), pTop, argList,
                     ((PSymbol) p).quantification);
+        }*/
+        if(argList.isEmpty()){
+            return new PSymbol(p.getType(),p.getTypeValue(),pTop);
         }
-        return p;
+        return new PSymbol(p.getType(), p.getTypeValue(), pTop,
+                argList);
+    }
+    public static List<PExp> convertList(List<PExp> list, TypeGraph g, MTType z, MTType n){
+        ArrayList<PExp> rlist = new ArrayList<>();
+        for(PExp p : list){
+            rlist.add(replacePExp(p,g,z,n));
+        }
+        return rlist;
     }
 }

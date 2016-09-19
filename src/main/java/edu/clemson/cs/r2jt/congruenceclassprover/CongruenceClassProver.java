@@ -142,17 +142,30 @@ public final class CongruenceClassProver {
             }
         }
         //printVCEachStep = true;
+        ClauseSet temp = new ClauseSet(m_typeGraph,z,n);
         for (VC vc : vcs) {
-            //if(!vc.getName().equals("3_2"))continue;
+
+            if(!vc.getName().equals("5_1"))continue;
             // make every PExp a PSymbol
             vc.convertAllToPsymbols(m_typeGraph);
+
+
+            temp.addVC(vc);;
+
+            String showme = temp.toString();
+
             m_ccVCs.add(new VerificationConditionCongruenceClosureImpl(g, vc,
                     z, n));
             myModels[i++] = (new PerVCProverModel(g, vc.getName(), vc, null));
 
         }
+        System.out.println(temp.toString());
         m_nonQuantifiedTheoremSymbols = new HashSet<String>();
+
         for (TheoremEntry e : theoremEntries) {
+            ClauseSet theorems = new ClauseSet(g,z,n);
+            theorems.addClause(e.getAssertion());
+            System.out.println(e.getName() +  e.getAssertion().toString() +  theorems);
             PExp assertion =
                     Utilities.replacePExp(e.getAssertion(), m_typeGraph, z, n);
             String eName = e.getName();
@@ -186,6 +199,7 @@ public final class CongruenceClassProver {
                 //addContrapositive(assertion, eName);
             }
         }
+        //System.out.print(theorems.toString());
         if (n != null && z != null) {
             sumConversion(n, z);
         }
