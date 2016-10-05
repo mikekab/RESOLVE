@@ -75,7 +75,8 @@ public final class CongruenceClassProver {
 
     public CongruenceClassProver(TypeGraph g, List<VC> vcs, ModuleScope scope,
             CompileEnvironment environment, ProverListener listener) {
-
+        TrieBasedTermIndex te = new TrieBasedTermIndex();
+        te.test();
         // Only for web ide //////////////////////////////////////////
         myModels = new PerVCProverModel[vcs.size()];
         if (listener != null) {
@@ -128,7 +129,8 @@ public final class CongruenceClassProver {
 
         List<edu.clemson.cs.r2jt.typeandpopulate.entry.SymbolTableEntry> n_entries =
                 scope.query(new NameQuery(null, "N",
-                        MathSymbolTable.ImportStrategy.IMPORT_RECURSIVE,
+                        //MathSymbolTable.ImportStrategy.IMPORT_RECURSIVE,
+                        MathSymbolTable.ImportStrategy.IMPORT_NAMED,
                         MathSymbolTable.FacilityStrategy.FACILITY_INSTANTIATE,
                         false));
         MTType n = null;
@@ -163,12 +165,13 @@ public final class CongruenceClassProver {
         m_nonQuantifiedTheoremSymbols = new HashSet<String>();
 
         for (TheoremEntry e : theoremEntries) {
-            ClauseSet theorems = new ClauseSet(g,z,n);
-            theorems.addClause(e.getAssertion());
-            System.out.println(e.getName() +  e.getAssertion().toString() +  theorems);
+            if(!e.getSourceModuleIdentifier().toString().contains("Integer_Theory")){
+                continue;
+            }
             PExp assertion =
                     Utilities.replacePExp(e.getAssertion(), m_typeGraph, z, n);
             String eName = e.getName();
+            temp.addClause(e.getAssertion());
             if (assertion.getTopLevelOperation().equals("=B")
                     && assertion.getQuantifiedVariables().size() > 0) {
                 addEqualityTheorem(true, assertion, eName + "_left"); // match left
@@ -199,7 +202,8 @@ public final class CongruenceClassProver {
                 //addContrapositive(assertion, eName);
             }
         }
-        //System.out.print(theorems.toString());
+        temp.initializeTermStore();
+        System.out.print(temp);
         if (n != null && z != null) {
             sumConversion(n, z);
         }

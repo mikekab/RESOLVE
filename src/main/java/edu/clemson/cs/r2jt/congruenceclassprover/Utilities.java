@@ -26,9 +26,10 @@ import java.util.List;
  */
 public class Utilities {
 
-    public static PExp replacePExp(PExp p, TypeGraph g, MTType z, MTType n) {
+    public static PExp replacePExp(PExp pe, TypeGraph g, MTType z, MTType n) {
         ArrayList<PExp> argList = new ArrayList<PExp>();
         ArrayList<PExp> argsTemp = new ArrayList<PExp>();
+        PSymbol p = (PSymbol)pe;
         for (PExp pa : p.getSubExpressions()) {
             argList.add(replacePExp(pa, g, z, n));
         }
@@ -99,7 +100,7 @@ public class Utilities {
                     ((PSymbol) p).quantification);
         }*/
         if(argList.isEmpty()){
-            return new PSymbol(p.getType(),p.getTypeValue(),pTop);
+            return new PSymbol(p.getType(), p.getTypeValue(), pTop, p.quantification);
         }
         return new PSymbol(p.getType(), p.getTypeValue(), pTop,
                 argList);

@@ -255,7 +255,7 @@ public class ConjunctionOfNormalizedAtomicExpressions {
      * @param atomicFormula one sided expression. (= new root) is appended and
      *                      expression is inserted if no match of the side is found. Otherwise
      *                      current root is returned.
-     * @return current integer value of root symbol that represents the input.
+     * @return current integer label of root symbol that represents the input.
      */
     private int addAtomicFormula(NormalizedAtomicExpression atomicFormula) {
         // Return root if atomic formula is present

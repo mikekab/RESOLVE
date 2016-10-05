@@ -10,35 +10,47 @@ import edu.clemson.cs.r2jt.typeandpopulate.MTType;
  * Created by Mike on 9/17/2016.
  */
 public class Symbol {
-    static enum use {constant, variable, type};
-    public final use m_usage;
+    public final boolean m_isType;
+    public final boolean m_isConstant;
+    public final boolean m_internal;
+    public final int m_arity;
     public final String m_name;
     public final String m_type;
-    public final int m_arity;
 
-    public Symbol(String name, use usage, String type, int arity){
+
+    public Symbol(String name, String type, int arity, boolean isConstant, boolean isType){
         m_name = name;
-        m_usage = usage;
         m_type = type;
         m_arity = arity;
+        m_isConstant = isConstant;
+        m_isType = isType;
+        m_internal = true;
     }
     public Symbol(PSymbol p){
         MTType t = p.getType();
-        m_type = t.toString();
+        String ts = t.toString();
+        int arity = 0;
+        boolean is_constant = true;
+        boolean is_type = false;
+        String name = p.getTopLevelOperation();
         if(t instanceof MTFunction){
             MTFunction f = (MTFunction)t;
-            m_arity = f.getComponentTypes().size();
+            arity = f.getComponentTypes().size();
         }
-        else m_arity = 0;
+        else if(p.getSubExpressions().size()>0){
+            arity = p.getSubExpressions().size();
+        }
 
-        if(p.isVariable()){
-            m_usage = use.variable;
+        if(p.quantification.equals(PSymbol.Quantification.FOR_ALL)){
+            is_constant = false;
         }
-        else if(t instanceof MTProper || t instanceof MTNamed){
-            m_usage = use.type;
-        }
-        else m_usage = use.constant;
 
-        m_name = p.getTopLevelOperation();
+
+        this.m_name = name;
+        this.m_type = ts;
+        this.m_arity = arity;
+        this.m_isConstant = is_constant;
+        this.m_isType = is_type;
+        m_internal = false;
     }
 }
