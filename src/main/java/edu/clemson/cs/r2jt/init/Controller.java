@@ -1242,7 +1242,7 @@ public class Controller {
             }
         }
         catch (NoSuchSymbolException nsse) {
-            //Can't find the module we're in.  Shouldn't be possible.
+            //Can't findGeneralization the module we're in.  Shouldn't be possible.
             throw new RuntimeException(nsse);
         }
     }

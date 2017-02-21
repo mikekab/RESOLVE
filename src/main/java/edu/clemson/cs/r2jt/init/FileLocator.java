@@ -25,7 +25,6 @@ public class FileLocator {
     // ===========================================================
 
     public FileLocator() {
-        ;
     }
 
     // ===========================================================
@@ -150,7 +149,7 @@ public class FileLocator {
 
     private String noFileMessage(String name, String dir) {
         String msg =
-                "Could not find a file with name " + name
+                "Could not findGeneralization a file with name " + name
                         + " in the directory " + dir
                         + " or any of its subdirectories.";
         return msg;
@@ -165,7 +164,7 @@ public class FileLocator {
 
     private String noFileInDirMessage(String name, String dir) {
         String msg =
-                "Could not find a file with name " + name
+                "Could not findGeneralization a file with name " + name
                         + " in the directory " + dir + ".";
         return msg;
     }
@@ -173,8 +172,8 @@ public class FileLocator {
     private String noFileMessage4(String name1, String name2, String name3,
             String name4, String dir) {
         String msg =
-                "Could not find a file with name " + name1 + " or " + name2
-                        + " or " + name3 + " or " + name4
+                "Could not findGeneralization a file with name " + name1
+                        + " or " + name2 + " or " + name3 + " or " + name4
                         + " in the directory " + dir
                         + " or any of its subdirectories.";
         return msg;

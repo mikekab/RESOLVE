@@ -14,11 +14,13 @@ package edu.clemson.cs.r2jt.congruenceclassprover;
 
 import edu.clemson.cs.r2jt.rewriteprover.absyn.PExp;
 import edu.clemson.cs.r2jt.rewriteprover.absyn.PSymbol;
+import edu.clemson.cs.r2jt.typeandpopulate.MTProper;
 import edu.clemson.cs.r2jt.typeandpopulate.MTType;
 import edu.clemson.cs.r2jt.typereasoning.TypeGraph;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Mike on 2/1/2016.
@@ -29,7 +31,7 @@ public class Utilities {
     public static PExp replacePExp(PExp pe, TypeGraph g, MTType z, MTType n) {
         ArrayList<PExp> argList = new ArrayList<PExp>();
         ArrayList<PExp> argsTemp = new ArrayList<PExp>();
-        PSymbol p = (PSymbol)pe;
+        PSymbol p = (PSymbol) pe;
         for (PExp pa : p.getSubExpressions()) {
             argList.add(replacePExp(pa, g, z, n));
         }
@@ -42,8 +44,9 @@ public class Utilities {
             argList.add(eqExp);
             return new PSymbol(g.BOOLEAN, null, "not", argList);
         }
-        else if(pTop.equals("=")&& argList.get(0).getType().toString().equals("B")){
-            return new PSymbol(g.BOOLEAN,null,"iff",argList);
+        else if (pTop.equals("=")
+                && argList.get(0).getType().toString().equals("B")) {
+            return new PSymbol(g.BOOLEAN, null, "iff", argList);
         }
         else if (pTop.equals(">=")) {
             argsTemp.add(argList.get(1));
@@ -92,24 +95,111 @@ public class Utilities {
                     argsTemp);
         }
         // New: 5/8/16. Tag operators with range type if they aren't quantified.
- /*       else if (argList.size() > 0 ) {
-            if (((PSymbol) p).quantification
+        else if (argList.size() > 0 && !p.getType().toString().equals("B")) {
+            if (p.quantification
                     .equals(PSymbol.Quantification.NONE))
-                pTop += p.getType().toString();
+                pTop += ":" + p.getType().toString();
             return new PSymbol(p.getType(), p.getTypeValue(), pTop, argList,
-                    ((PSymbol) p).quantification);
-        }*/
-        if(argList.isEmpty()){
-            return new PSymbol(p.getType(), p.getTypeValue(), pTop, p.quantification);
+                    p.quantification);
         }
-        return new PSymbol(p.getType(), p.getTypeValue(), pTop,
-                argList);
+        if (argList.isEmpty()) {
+            return new PSymbol(p.getType(), p.getTypeValue(), pTop,
+                    p.quantification);
+        }
+        return new PSymbol(p.getType(), p.getTypeValue(), pTop, argList);
     }
-    public static List<PExp> convertList(List<PExp> list, TypeGraph g, MTType z, MTType n){
+
+    public static List<PExp> convertList(List<PExp> list, TypeGraph g, MTType z, MTType n) {
         ArrayList<PExp> rlist = new ArrayList<>();
-        for(PExp p : list){
-            rlist.add(replacePExp(p,g,z,n));
+        for (PExp p : list) {
+            rlist.add(replacePExp(p, g, z, n));
         }
         return rlist;
+    }
+
+    //f(f(x)) = x.f.f  f(x,y) = xy.f f(g(x),y) =x.gy.f
+    public static PExp stringToPExp(String s, TypeGraph g) {
+        MTProper t = new MTProper(g, "Y");
+        MTProper b = new MTProper(g, "B");
+        ArrayList<PExp> argList = new ArrayList<>();
+        char[] chars = s.toCharArray();
+        int numComp = 0;
+        for (int i = 0; i < chars.length; ++i) {
+            char c = chars[i];
+            switch (c) {
+                case '.':
+                    i++;
+                    char f = chars[i];
+                    PExp expr;
+                    String name;
+                    MTType type;
+                    int numArgs;
+                    switch (f) {
+                        case '~':
+                            name = "not";
+                            type = b;
+                            numArgs = 1;
+                            break;
+                        case '=':
+                            name = "=";
+                            type = b;
+                            numArgs = 2;
+                            break;
+                        case '|':
+                            name = "or";
+                            type = b;
+                            numArgs = 2;
+                            break;
+                        case '>':
+                            name = "implies";
+                            type = b;
+                            numArgs = 2;
+                            break;
+                        case 'p':
+                        case 'q':
+                        case 'r':
+                            name = "" + f;
+                            type = b;
+                            numArgs = 2;
+                            break;
+                        case 'F':
+                        case 'G':
+                        case 'H':
+                            name = "" + f;
+                            type = t;
+                            numArgs = 2;
+                            break;
+                        default:
+                            name = "" + f;
+                            type = t;
+                            numArgs = 1;
+                            break;
+                    }
+                    expr = new PSymbol(type, null, name, argList.subList(argList.size() - numArgs, argList.size()));
+                    int sz = argList.size();
+                    for (int idx = 0; idx < numArgs; ++idx) {
+                        argList.remove(argList.size() - 1);
+                    }
+                    argList.add(expr);
+                    continue;
+                case 'x':
+                case 'y':
+                case 'z':
+                    argList.add(new PSymbol(t, null, "" + c, PSymbol.Quantification.FOR_ALL));
+                    break;
+                default:
+                    argList.add(new PSymbol(t, null, "" + c));
+
+            }
+        }
+        return argList.get(0);
+    }
+
+    public static List<PExp> createTestCases(List<String> clauses, TypeGraph g) {
+        ArrayList<PExp> r = new ArrayList<>();
+        for (String cl : clauses) {
+            r.add(stringToPExp(cl, g));
+        }
+        return r;
     }
 }

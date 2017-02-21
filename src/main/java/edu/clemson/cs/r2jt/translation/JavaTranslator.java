@@ -124,7 +124,7 @@ public class JavaTranslator extends AbstractTranslator {
 
         if (invocationName == null && buildingJar) {
             throw new SourceErrorException(
-                    "Cannot find the operation 'Main' in facility file "
+                    "Cannot findGeneralization the operation 'Main' in facility file "
                             + node.getName().getName(), node.getLocation());
         }
 
@@ -309,7 +309,7 @@ public class JavaTranslator extends AbstractTranslator {
         Scope scopeToSearch = myScope;
 
         // If we're within a function, get the appropriate scope so we
-        // can find the SymbolTableEntry representing this FacilityDec.
+        // can findGeneralization the SymbolTableEntry representing this FacilityDec.
         // Note : I don't really like this. I'd rather use the depth of the
         // stack I think...
         if (!myScope.equals(myBuilder.getScope(this.getAncestor(2)))) {
@@ -1042,10 +1042,7 @@ public class JavaTranslator extends AbstractTranslator {
     }
 
     private boolean sourceNewerThan(File a, File b) {
-        if (a.lastModified() > b.lastModified()) {
-            return true;
-        }
-        return false;
+        return a.lastModified() > b.lastModified();
     }
 
     public static final void setUpFlags() {

@@ -315,8 +315,8 @@ public class Main {
                         + " is not a RESOLVE file.");
             }
             else if (!file.isFile()) {
-                System.err.println("Cannot find the file " + file.getName()
-                        + " in this directory.");
+                System.err.println("Cannot findGeneralization the file "
+                        + file.getName() + " in this directory.");
             }
             else {
                 instanceEnvironment.setTargetFile(file);

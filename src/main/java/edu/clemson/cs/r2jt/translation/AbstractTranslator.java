@@ -710,9 +710,10 @@ public abstract class AbstractTranslator extends TreeWalkerStackVisitor {
             }
         }
         catch (NoSuchSymbolException nsse) {
-            throw new RuntimeException("Translation unable to find a "
-                    + "FacilityEntry locally or otherwise that defines type: "
-                    + type.toString());
+            throw new RuntimeException(
+                    "Translation unable to findGeneralization a "
+                            + "FacilityEntry locally or otherwise that defines type: "
+                            + type.toString());
         }
         catch (DuplicateSymbolException dse) {
             throw new RuntimeException(dse); // shouldn't fire.
@@ -823,7 +824,9 @@ public abstract class AbstractTranslator extends TreeWalkerStackVisitor {
         String message;
 
         if (qualifier == null) {
-            message = "Translation was unable to find symbol: " + symbolName;
+            message =
+                    "Translation was unable to findGeneralization symbol: "
+                            + symbolName;
         }
         else {
             message =

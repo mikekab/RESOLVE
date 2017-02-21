@@ -97,7 +97,7 @@ public abstract class Exp extends ResolveConceptualElement {
 
     /**
      * <p>This method must be implemented by all inherited classes
-     * to attempt to find the provided expression in our
+     * to attempt to findGeneralization the provided expression in our
      * sub-expressions.</p>
      *
      * @param exp The expression we wish to locate.
@@ -108,7 +108,7 @@ public abstract class Exp extends ResolveConceptualElement {
     public abstract boolean containsExp(Exp exp);
 
     /**
-     * <p>This method attempts to find an expression with the given name in our
+     * <p>This method attempts to findGeneralization an expression with the given name in our
      * sub-expressions. This method is only invoked by a mathematical expression,
      * but since we could have either mathematical or programming
      * expressions, the default behavior is to return {@code false}.</p>
@@ -179,7 +179,7 @@ public abstract class Exp extends ResolveConceptualElement {
      *         equivalent.
      */
     public final static boolean equivalent(Exp e1, Exp e2) {
-        return !((e1 == null ^ e2 == null))
+        return (e1 == null) == (e2 == null)
                 && ((e1 == null && e2 == null) || e1.equivalent(e2));
     }
 
@@ -244,7 +244,7 @@ public abstract class Exp extends ResolveConceptualElement {
         //neither is.  If not, we short circuit with "false".
         //The second line short circuits and returns "true" if both are null.
         //The third line performs the string comparison.
-        return !((s1 == null) ^ (s2 == null))
+        return (s1 == null) == (s2 == null)
                 && ((s1 == null && s2 == null) || (stringEquivalent(s1
                         .getName(), s2.getName())));
     }
@@ -286,7 +286,7 @@ public abstract class Exp extends ResolveConceptualElement {
         //neither is.  If not, we short circuit with "false".
         //The second line short circuits and returns "true" if both are null.
         //The third line performs the string comparison.
-        return !((s1 == null) ^ (s2 == null))
+        return (s1 == null) == (s2 == null)
                 && ((s1 == null && s2 == null) || (s1.equals(s2)));
     }
 

@@ -233,12 +233,7 @@ public class Archiver {
                         ex.toString());
             }
         }
-        if (ret == 0) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return ret == 0;
     }
 
     public void setOutputJar(String jarFileString) {
@@ -443,7 +438,7 @@ public class Archiver {
 
     /**
      * <p>Method to generate the names of the standard imports to add.
-     * (need to check the OS to find out what kind of slash to use first).</p>
+     * (need to check the OS to findGeneralization out what kind of slash to use first).</p>
      */
     private void createStandardImports() {
         stdImports = new String[14];

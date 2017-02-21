@@ -1,3 +1,15 @@
+/**
+ * TermIndex.java
+ * ---------------------------------
+ * Copyright (c) 2016
+ * RESOLVE Software Research Group
+ * School of Computing
+ * Clemson University
+ * All rights reserved.
+ * ---------------------------------
+ * This file is subject to the terms and conditions defined in
+ * file 'LICENSE.txt', which is part of this source code package.
+ */
 package edu.clemson.cs.r2jt.congruenceclassprover;
 
 import edu.clemson.cs.r2jt.collections.*;
@@ -13,13 +25,16 @@ import org.apache.commons.collections4.trie.*;
  * Created by Mike on 9/22/2016.
  */
 public class TermIndex {
+
     TermStore termStore;
     int arity;
+
     /*
     all terms are of the same arity.  all arguments are nullary.
 
      */
     private class Substitution {
+
         // int[position][symbol ref(s)]
         // pos 0: the whole term, 1: the func symbol, 2+: the args
         Map<Integer, int[]> substitution;
@@ -37,10 +52,12 @@ public class TermIndex {
         }
 
         public Set<Integer> getDomain() {
-            Iterator<Map.Entry<Integer, int[]>> mit = substitution.entrySet().iterator();
+            Iterator<Map.Entry<Integer, int[]>> mit =
+                    substitution.entrySet().iterator();
             while (mit.hasNext()) {
                 Map.Entry<Integer, int[]> me = mit.next();
-                if (me.getValue().length == 1 && me.getKey() == me.getValue()[0]) {
+                if (me.getValue().length == 1
+                        && me.getKey() == me.getValue()[0]) {
                     mit.remove();
                 }
             }
@@ -70,7 +87,8 @@ public class TermIndex {
                 if (substitution.containsKey(term[i])) {
                     assert substitution.get(i).length == 1;
                     ra[i] = substitution.get(i)[0];
-                } else
+                }
+                else
                     ra[i] = term[i];
             }
             return ra;
@@ -78,6 +96,7 @@ public class TermIndex {
     }
 
     private class SubsNode {
+
         Substitution m_sub; // label
         java.util.List<SubsNode> children;
 
@@ -87,10 +106,7 @@ public class TermIndex {
         }
 
         public boolean isEmpty() {
-            if (m_sub.getDomain().isEmpty()) {
-                return true;
-            }
-            return false;
+            return m_sub.getDomain().isEmpty();
         }
     }
 
@@ -131,6 +147,7 @@ public class TermIndex {
         }
         return new Substitution(norm);
     }
+
     public Substitution joinSubstitutions(Substitution a, Substitution b) {
         Map<Integer, int[]> smap = new HashMap<>();
         for (Integer i : b.getDomain()) {
@@ -147,7 +164,8 @@ public class TermIndex {
     public boolean is_variantNode(Substitution nLabel, Substitution s) {
         for (int v : nLabel.getDomain()) {
             int[] t = nLabel.get(v);
-            if (t.length > 1 || t[0] < 0) return false;
+            if (t.length > 1 || t[0] < 0)
+                return false;
         }
         return true;
     }

@@ -438,7 +438,7 @@ public class Populator extends TreeWalkerVisitor {
             d.setMathType(d.getWrappedDec().getMathType());
         }
         else {
-            MTType t = ((OperationDec) d.getWrappedDec()).getMathType();
+            MTType t = d.getWrappedDec().getMathType();
             if (t == null) {
                 t = myTypeGraph.VOID;
             }
@@ -461,7 +461,7 @@ public class Populator extends TreeWalkerVisitor {
             // TODO: really a qualifier SHOULD be passed to this query, but if
             // we do so hoping that it will search the enhancements of the
             // facility qualifier you passed you've thought wrong -- it won't
-            // find it. My guess is it's something with the qualifiedSearchPath.
+            // findGeneralization it. My guess is it's something with the qualifiedSearchPath.
             OperationEntry op =
                     myBuilder.getInnermostActiveScope().queryForOne(
                             new OperationQuery(null, name, argTypes));
@@ -826,7 +826,7 @@ public class Populator extends TreeWalkerVisitor {
             catch (NoSuchSymbolException nsse) {
                 //We just added this, so this is not possible.
                 throw new RuntimeException(
-                        "Cannot find an Operation with name "
+                        "Cannot findGeneralization an Operation with name "
                                 + dec.getName().getName() + "?");
             }
             catch (DuplicateSymbolException dse) {
@@ -2616,7 +2616,7 @@ public class Populator extends TreeWalkerVisitor {
         MTFunction eType = e.getConservativePreApplicationType(myTypeGraph);
 
         PosSymbol eOperator =
-                ((AbstractFunctionExp) e).getOperatorAsPosSymbol();
+                e.getOperatorAsPosSymbol();
         String eOperatorString = eOperator.getSymbol().getName();
 
         List<MathSymbolEntry> sameNameFunctions =

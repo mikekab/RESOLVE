@@ -988,7 +988,8 @@ public class PreProcessor extends TreeWalkerStackVisitor {
 
     public void recordNotFound(Location location, PosSymbol name) {
         String message =
-                "Cannot find a record with the name: " + name.getName();
+                "Cannot findGeneralization a record with the name: "
+                        + name.getName();
         throw new SourceErrorException(message, location);
     }
 
@@ -1168,10 +1169,7 @@ public class PreProcessor extends TreeWalkerStackVisitor {
         int last = segs.size() - 1;
 
         // Check if the last entry is an array or not.
-        if (segs.get(last) instanceof VariableArrayExp)
-            return true;
-        else
-            return false;
+        return segs.get(last) instanceof VariableArrayExp;
     }
 
     /**

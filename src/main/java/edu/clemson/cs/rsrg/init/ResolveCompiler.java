@@ -295,8 +295,9 @@ public class ResolveCompiler {
 
             // Error if we can't locate the file
             if (!file.isFile()) {
-                throw new MiscErrorException("Cannot find the file "
-                        + file.getName() + " in this directory.",
+                throw new MiscErrorException(
+                        "Cannot findGeneralization the file " + file.getName()
+                                + " in this directory.",
                         new FileNotFoundException());
             }
             // Recursively compile all RESOLVE files in the specified directory
